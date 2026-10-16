@@ -34,10 +34,10 @@ Everything else lives one link away, and is read when the task touches it.
 ## Commands
 
 {% if language in ['python', 'python+typescript'] -%}
-- Run tests: `uv run pytest`
+- Run tests (Python): `uv run pytest`
 {% endif -%}
 {% if language in ['typescript', 'python+typescript'] -%}
-- Run tests: `npm test`
+- Run tests (TypeScript): `npm test`
 {% endif -%}
 {% if language == 'other' -%}
 - Run tests: _(fill in)_

@@ -199,10 +199,10 @@ CLAUDE.md" in `.claude/conventions.md`.
 ## Commands
 
 {% if language in ['python', 'python+typescript'] -%}
-- Run tests: `uv run pytest`
+- Run tests (Python): `uv run pytest`
 {% endif -%}
 {% if language in ['typescript', 'python+typescript'] -%}
-- Run tests: `npm test`
+- Run tests (TypeScript): `npm test`
 {% endif -%}
 
 @.claude/conventions.md
@@ -477,7 +477,8 @@ after one greenfield project has used v0.1. T3 is its test. B4 may reuse this mo
 
 Resolved 2026-10-15 against `specify` 1.1.1: it changed no template file. It added
 `.specify/` and `.claude/skills/speckit-*/`, wrote no `CLAUDE.md`, and removed nothing. T10 holds
-the line and runs in CI with the CLI pinned to 1.1.1. The original risk text follows.
+the line and runs in CI with the CLI pinned to 1.1.1. It passed on a GitHub runner on
+2026-10-15. The original risk text follows.
 
 The next-steps message tells the consumer to run `specify init --here --force`. `--force` skips
 the non-empty-directory prompt. SpecKit may write `CLAUDE.md` or files under `.claude/`. I have
@@ -509,9 +510,9 @@ for every `{{` it shows, and the single `{source_dir}` placeholder costs less th
 
 ### Q4 — Where the repo lives
 
-**Recommendation.** Under an organisation, not the personal account. It keeps a personal email and
-account out of the template's history. Which organisation is the owner's call; `terraparse` is the
-existing candidate.
+**Decision (owner, 2026-10-15).** The repo lives under the personal account, on purpose. This
+replaces the earlier recommendation of an organisation account. The cost is that the account name
+and the commit author email are visible in a public repo's history.
 
 ### Q5 — Versioning
 
@@ -584,9 +585,15 @@ v0.1 is built in this directory. Nothing is committed or pushed.
     "plan status", since that section is gone.
   - The Commands block prints `Run tests: _(fill in)_` for `language: other`, so the heading is
     not empty.
+  - The Commands lines are labelled `(Python)` and `(TypeScript)`, so `python+typescript` does not
+    print two identical `Run tests:` lines.
   - T5 also bans object-storage URLs.
 - **Open for B2:** the first push to a private repo, the full-tree read by hand, and the choice of
   what happens to `journal/`. T5 scans `template/` only, so it does not cover this plan.
 - **`LICENSE`** names "npt contributors". Put the real holder in before release.
 - **CI** actions are pinned by SHA (`actions/checkout` v4.2.2, `astral-sh/setup-uv` v6.8.0).
-  The workflow has not run on GitHub.
+  First GitHub run (run 38846519911, commit `a964712`), read with `gh run view --log`: both jobs
+  succeeded. The `generate` job shows `21 passed, 1 skipped`, and its secret scan step passed.
+  The `speckit` job shows `1 passed, 21 deselected`, so T10 ran on the runner and was not
+  skipped. The `generate` job does not pass `-rs`, so its log does not name the skipped test. It
+  is T10, the only test with a skip condition.

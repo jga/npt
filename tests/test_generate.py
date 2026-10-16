@@ -181,7 +181,9 @@ def test_t1_every_language_generates(tmp_path, language):
     project = generate(REPO, tmp_path / "p", language=language)
     assert_layout(project)
     commands = (project / "CLAUDE.md").read_text().split("## Commands", 1)[1]
-    assert "Run tests:" in commands
+    assert "Run tests" in commands
+    assert ("(Python)" in commands) == ("python" in language)
+    assert ("(TypeScript)" in commands) == ("typescript" in language)
 
 
 # --- T2: update changes template-owned files only ----------------------------------------
