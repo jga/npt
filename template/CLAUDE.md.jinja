@@ -1,0 +1,46 @@
+# CLAUDE.md — {{ project_name }} orientation
+
+This file is for whoever (human or Claude) picks this project up next. **It is deliberately
+thin.** It holds what is true regardless of task, and what Claude must apply on every task.
+Everything else lives one link away, and is read when the task touches it.
+
+**Before adding a dated `## ... (YYYY-MM-DD)` section here: don't.** Write a one-line entry in
+`journal/CHANGELOG.md` instead. See "Maintaining `CLAUDE.md`" in `.claude/conventions.md`.
+
+## What this is
+
+{{ one_line_description }}
+
+<!-- Replace with 2-4 sentences: what the project does, for whom, and which spec or design
+     document is authoritative. Link it. -->
+
+## How this file is organized
+
+- **`.claude/conventions.md`** (always loaded, imported below) — standing rules: how to cite a
+  section, how to maintain this file and the architecture map.
+- **`.claude/architecture_map.md`** (always loaded, imported below) — where each capability lives
+  in code. Read it before touching code.
+- **`.claude/bqrs.md`** (not imported) — the BQRS plan shape and the plan-review rule. Read it
+  when you write or review a feature development plan that uses that shape. Skip it when plans
+  come from another tool such as SpecKit.
+- **`.claude/docs/environment.md`** — setup, dependency pinning, provider quirks. Read when
+  touching the environment, or before running a one-off script outside the normal commands.
+- **`.claude/docs/known_gaps.md`** — the living "not yet done" list. Read before building near an
+  area that might already have a known gap.
+- **`journal/CHANGELOG.md`** — one line per feature or design change, newest first, each linking
+  to its plan or spec, or to a summary of how it came to be.
+- **`journal/misc/`** — free-form notes.
+
+## Commands
+
+{% if language in ['python', 'python+typescript'] -%}
+- Run tests: `uv run pytest`
+{% endif -%}
+{% if language in ['typescript', 'python+typescript'] -%}
+- Run tests: `npm test`
+{% endif -%}
+{% if language == 'other' -%}
+- Run tests: _(fill in)_
+{% endif %}
+@.claude/conventions.md
+@.claude/architecture_map.md

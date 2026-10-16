@@ -1,0 +1,22 @@
+# Secrets and local Claude Code settings
+.env
+.env.*
+.claude/settings.local.json
+{% if language in ['python', 'python+typescript'] %}
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+{% endif %}
+{%- if language in ['typescript', 'python+typescript'] %}
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+{% endif %}

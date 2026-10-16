@@ -1,0 +1,34 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      - name: Generation tests (T1 to T9)
+        run: uv run --with copier==9.19.1 --with pytest pytest -q tests
+      - name: Secret scan
+        run: git ls-files -z | xargs -0 uvx --from detect-secrets==1.5.0 detect-secrets-hook  # pragma: allowlist secret
+
+  speckit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      - name: SpecKit does not overwrite template files (T10)
+        run: |
+          uv tool install specify-cli==1.1.1
+          uv run --with copier==9.19.1 --with pytest pytest -q tests -k speckit -rs

@@ -1,0 +1,24 @@
+# Secrets and local Claude Code settings
+.env
+.env.*
+.claude/settings.local.json
+
+# Python (tests/)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.ruff_cache/
+
+# Scratch output from generation experiments
+/scratch/
+/out/
+
+# Local temporary directory
+tmp/
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+.DS_Store

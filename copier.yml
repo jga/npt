@@ -1,0 +1,42 @@
+_min_copier_version: "9.19.1"
+_subdirectory: template
+_answers_file: .copier-answers.yml
+_templates_suffix: .jinja
+
+_skip_if_exists:
+  - CLAUDE.md
+  - README.md
+  - .gitignore
+  - .claude/architecture_map.md
+  - .claude/docs/environment.md
+  - .claude/docs/known_gaps.md
+  - journal/CHANGELOG.md
+
+_message_after_copy: |
+  Next steps (nothing was run for you):
+    git init                                   # if this is a new directory
+    Set up the environment                     # see .claude/docs/environment.md
+    Fill out README.md and CLAUDE.md
+    specify init --here --force --integration claude
+
+project_name:
+  type: str
+  help: Human-readable project name
+  validator: "{% if not (project_name | regex_search('^[^\\n{}%]{1,80}$')) %}1-80 characters, no braces, no percent sign{% endif %}"
+
+one_line_description:
+  type: str
+  help: One sentence for CLAUDE.md and README.md
+  validator: "{% if not (one_line_description | regex_search('^[^\\n{}%]{1,200}$')) %}1-200 characters, one line, no braces, no percent sign{% endif %}"
+
+language:
+  type: str
+  help: Primary language (drives .gitignore and the Commands block only)
+  choices: [python, typescript, python+typescript, other]
+  default: python
+
+source_dir:
+  type: str
+  help: Directory whose files the architecture map tracks
+  default: src
+  validator: "{% if not (source_dir | regex_search('^[A-Za-z0-9_./-]+$')) %}letters, digits, _ . / - only{% endif %}"
