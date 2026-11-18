@@ -398,6 +398,9 @@ uvx copier copy https://github.com/<org>/npt.git . --vcs-ref <tag-or-sha>
 uvx copier update --vcs-ref <tag-or-sha>
 ```
 
+The `uv init` first order above is superseded: see "Corrections (2026-11-18)" at the end, and
+0002_new_project_script.md.
+
 `copier update` does a three-way merge between the version in `.copier-answers.yml`, the new
 version, and the project's current files. It needs a clean git working tree. Only template-owned
 files change, so conflicts should be rare.
@@ -419,7 +422,7 @@ The template is public and runs inside the consumer's project.
 | A compromised template repo runs code on the consumer's machine at `copier copy`. | The template has **no `_tasks`, `_migrations`, or Jinja extensions**, so it needs no `--trust`. A test fails if one is added (T4, T7). |
 | A moved tag delivers different content than was reviewed. | Pin by commit SHA, not by tag. Record the SHA in the consumer's notes. Sign release tags with `git tag -s`. Check whether GitHub's immutable-release setting is available and turn it on. |
 | An answer is rendered into a file in a way that changes its meaning. | Every answer that reaches a file has a `validator:` regex: no braces, no percent sign, no newline. The template ships no script and no JSON. |
-| Secrets or personal data enter the public repo. | No question asks for them. `.gitignore` covers `.env` and `.claude/settings.local.json`. CI runs a secret scanner and a grep gate (T5). GitHub secret scanning and push protection are on. |
+| Secrets or personal data enter the public repo. | No question asks for them. `.gitignore` covers `.env` and `.claude/settings.local.json` (only if the template `.gitignore` is written; see Corrections, 2026-11-18). CI runs a secret scanner and a grep gate (T5). GitHub secret scanning and push protection are on. |
 | The consumer's `.copier-answers.yml` leaks something. | It holds only the answers above, none of which is secret. Never add a `secret: true` question without re-reading this table. |
 | Account takeover of the maintainer. | Passkey or hardware 2FA. Branch protection on `main`. Tag protection ruleset. No force-push. CI actions pinned by SHA, `permissions: contents: read`. |
 
@@ -597,3 +600,27 @@ v0.1 is built in this directory. Nothing is committed or pushed.
   The `speckit` job shows `1 passed, 21 deselected`, so T10 ran on the runner and was not
   skipped. The `generate` job does not pass `-rs`, so its log does not name the skipped test. It
   is T10, the only test with a skip condition.
+
+## Corrections (2026-11-18)
+
+Found while planning 0002_new_project_script.md. Reproduced with Copier 9.19.1 and uv 0.12.23.
+
+- **The `.gitignore` claim holds only in one order.** The security table says the generated
+  `.gitignore` covers `.env` and `.claude/settings.local.json`. This plan, and the first
+  `README.md`, told the consumer to run `uv init` first, then `copier copy`. `uv init` writes its
+  own `.gitignore` (Python entries only). `.gitignore` is in `_skip_if_exists`, so Copier leaves
+  it, and the template `.gitignore` is never written. In that flow the result has no `.env` line
+  and no `.claude/settings.local.json` line. T1 did not catch it, because T1 generates into an
+  empty directory.
+- **The same order leaves an empty `README.md` empty.** `uv init` writes a `README.md` with 0
+  bytes. `README.md` is in `_skip_if_exists`, so it stays empty.
+- **Fix.** Run `copier copy` first, then `uv init`. `uv init` does not overwrite existing files.
+  The bootstrap script `scripts/new-project.sh` (installed as `npt-copier`) does this, deletes an
+  empty README before Copier runs, and appends missing secret lines to an existing `.gitignore`.
+  The repo `README.md` is rewritten to match. Tests N1 and N2 in 0002_new_project_script.md cover
+  both cases.
+- **The "template ships no script" statement still holds for `template/`.** The bootstrap script
+  is outside `template/`, so Copier never copies or runs it, and `--trust` is still not needed.
+  It is code the consumer runs, so it has its own blocker (B3 in 0002_new_project_script.md).
+- **Test count.** After 0002 is built the suite has 53 tests: T1 to T10 from this plan, and N1 to
+  N11 from 0002.

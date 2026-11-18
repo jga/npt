@@ -16,7 +16,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
-      - name: Generation tests (T1 to T9)
+      - name: Generation and script tests (T1 to T9, N1 to N11)
         run: uv run --with copier==9.19.1 --with pytest pytest -q tests
       - name: Secret scan
         run: git ls-files -z | xargs -0 uvx --from detect-secrets==1.5.0 detect-secrets-hook  # pragma: allowlist secret
