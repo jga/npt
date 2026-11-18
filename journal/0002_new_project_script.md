@@ -1,8 +1,8 @@
 ---
-status: in-progress
+status: done
 status_changed: 2026-11-18
 type: plan
-next: Owner reads the script, commits and pushes, then tries the SHA-pinned download from the README (B3). Nothing is committed yet.
+next: None. Later work is a new plan: adoption mode (B3 in 0001_copier_template_repo.md) and a non-empty lowercase readme.md (Q4 here).
 ---
 
 # A bootstrap script that creates or adopts a project from the npt template
@@ -297,7 +297,10 @@ control. For a file Copier would change, Copier asks per file when it has a term
 the file when it has none (the second behaviour was observed for `README.md`; the first is
 Copier's documented behaviour and was not run).
 
-### B3 — The script is code that runs on the consumer's machine, from a public repo [open]
+### B3 — The script is code that runs on the consumer's machine, from a public repo [resolved]
+
+Resolved 2026-11-18, after the owner committed `75f4499` to `main`. The README setup step was run
+as written, with that SHA. The original text follows.
 
 A bad version of this file runs with the consumer's rights. A moved ref, a compromised account,
 or a bad edit would reach everyone who runs it. 0001_copier_template_repo.md treats this class of
@@ -315,10 +318,8 @@ risk as the main one.
   existing `generate` CI job covers it.
 - The scrub gate (T5 in 0001_copier_template_repo.md) is extended to `scripts/`.
 
-Status 2026-11-18: every control above is built and tested locally, and the three cases ran by
-hand against real GitHub (see Implementation notes). B3 stays open for two things only: the owner
-reads the script, and the SHA-pinned download from the README is tried once after the script is
-on `main`.
+Status 2026-11-18: every control above is built and tested. The three cases ran by hand against
+real GitHub, and the SHA-pinned download was tried (see Implementation notes).
 
 ## Questions
 
@@ -390,7 +391,7 @@ In priority order. Reasoning is under each ID above.
 
 ## Implementation notes (2026-11-18)
 
-Built in this directory. Nothing is committed or pushed.
+Built, then committed by the owner as `75f4499` ("Shift to bash script") on `main`.
 
 - **Built:** `scripts/new-project.sh` (executable, `shellcheck` 0.10.0 clean), tests N1 to N11 in
   `tests/test_generate.py`, the rewritten `README.md`, a `CHANGELOG.md` line, a renamed CI step,
@@ -416,12 +417,20 @@ Built in this directory. Nothing is committed or pushed.
   - `scratch_template` in the tests dropped every directory named `journal`, including
     `template/journal`. It now drops only the repo's top-level `journal/`. The 22 earlier tests
     still pass.
-- **Not done, on purpose:** the README setup URL still has the `<commit-sha>` placeholder. It
-  needs a commit that contains the script, and nothing is committed yet.
+- **README placeholder:** the setup URL keeps the `<commit-sha>` placeholder on purpose. Each
+  reader picks the commit they have read. The README says how to find the latest one.
 - **Run by hand against real GitHub (2026-11-18), with the working-tree script and the default
   `NPT_REPO_URL`:** the default SHA resolved to `33615e3b…` (the tip of `main`). A new project, a
   bare directory (empty README removed, three secret lines appended, `notes.txt` kept) and a
   directory with a `pyproject.toml` (`uv init` skipped, file unchanged) all worked. A well-formed
   SHA that does not exist exited 1 and left no directory.
-- **Not tested:** Copier's per-file prompt when a terminal is present; macOS; the SHA-pinned
-  `curl` download in the README, because the script is not on `main` yet.
+- **After the commit (`75f4499`), checked by hand:**
+  - `git ls-remote` shows `main` at `75f4499…`. The commit changes 7 files, including
+    `scripts/new-project.sh`.
+  - The README setup step, run as written with that SHA (`curl -fsSL …/75f4499…/scripts/new-project.sh`),
+    downloaded 5193 bytes. The file is byte-identical to the working copy (same SHA-256).
+  - The downloaded copy, run as `npt-copier` with the default URL and no SHA, resolved the latest
+    `main` to `75f4499…`, created the project, and recorded `_commit: 75f4499`.
+  - GitHub Actions run 44350060163 on that commit succeeded. `generate`: `52 passed, 1 skipped`
+    (T10, as before). `speckit`: `1 passed, 52 deselected`, so T10 ran and passed.
+- **Not tested:** Copier's per-file prompt when a terminal is present; macOS.

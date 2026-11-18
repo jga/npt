@@ -624,3 +624,5 @@ Found while planning 0002_new_project_script.md. Reproduced with Copier 9.19.1 a
   It is code the consumer runs, so it has its own blocker (B3 in 0002_new_project_script.md).
 - **Test count.** After 0002 is built the suite has 53 tests: T1 to T10 from this plan, and N1 to
   N11 from 0002.
+- **Pushed.** Everything in this plan is on `main` (`a964712`, `33615e3`). The "nothing is
+  committed or pushed" line in the 2026-10-15 notes is out of date. 0002 landed as `75f4499`.
