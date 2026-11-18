@@ -369,8 +369,8 @@ In priority order. Reasoning is under each ID above.
 2. **B2** — Delete only provably empty regular files. Never pass `--overwrite`. N2 and N9.
 3. **B3** — Pin the script by commit SHA, keep it small and `eval`-free, validate every argument,
    pin `copier`, run `shellcheck`, extend the scrub gate to `scripts/`. N5 and N10.
-4. **Q3, Q4, Q5, Q6** — name is the directory name (Q2 is decided: installed as `npt-copier`); name is the
-   directory name; warn on other README files; `main` only; passthrough after `--`.
+4. **Q3, Q4, Q5, Q6** — name is the directory name; warn on other README files; `main` only;
+   passthrough after `--`.
 5. **Q1, Q2** — Decided: a script, installed as `npt-copier`.
 
 ## Sequencing
@@ -434,3 +434,11 @@ Built, then committed by the owner as `75f4499` ("Shift to bash script") on `mai
   - GitHub Actions run 44350060163 on that commit succeeded. `generate`: `52 passed, 1 skipped`
     (T10, as before). `speckit`: `1 passed, 52 deselected`, so T10 ran and passed.
 - **Not tested:** Copier's per-file prompt when a terminal is present; macOS.
+
+## Corrections (2026-11-18)
+
+- **Recommendations entry 4 corrected.** It held a garbled, duplicated fragment ("name is the
+  directory name (Q2 is decided …); name is the directory name; …"), left by an earlier edit. It
+  now reads once. Q2 is covered by entry 5. Found by the check in
+  0003_bqrs_one_solution_two_places.md. The grouped entries are shorter than their items but not
+  wrong, so they are left as written.

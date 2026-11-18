@@ -555,8 +555,8 @@ In priority order. Reasoning is under each ID above.
 4. **B3** — Skip-if-exists on all project-owned files. Ship adoption mode in v0.2.
 5. **Q6, Q8** — SpecKit's files come from `specify init`, not Copier. Name the Claude Code
    integration key, and check it against `specify init --help`.
-6. **Q1, Q2, Q3, Q4, Q5, Q7** — MIT; `.claude/docs/`; static `conventions.md`; an organisation
-   account; SemVer tags; Perry out of scope.
+6. **Q1, Q2, Q3, Q4, Q5, Q7** — MIT; `.claude/docs/`; static `conventions.md`; the personal
+   account (owner decision, 2026-10-15); SemVer tags; Perry out of scope.
 
 ## Sequencing
 
@@ -626,3 +626,7 @@ Found while planning 0002_new_project_script.md. Reproduced with Copier 9.19.1 a
   N11 from 0002.
 - **Pushed.** Everything in this plan is on `main` (`a964712`, `33615e3`). The "nothing is
   committed or pushed" line in the 2026-10-15 notes is out of date. 0002 landed as `75f4499`.
+- **Recommendations entry for Q4 corrected (2026-11-18).** The entry said "an organisation
+  account". The Q4 item records the owner's decision: the personal account. The entry now says so.
+  Found by the check in 0003_bqrs_one_solution_two_places.md. The grouped one-line entries in
+  Recommendations are shorter than their items but not wrong, so they are left as written.
