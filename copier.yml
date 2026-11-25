@@ -10,6 +10,7 @@ _skip_if_exists:
   - .claude/architecture_map.md
   - .claude/docs/environment.md
   - .claude/docs/known_gaps.md
+  - .claude/docs/plan_settings.md
   - journal/CHANGELOG.md
 
 _message_after_copy: |

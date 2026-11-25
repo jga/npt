@@ -110,3 +110,9 @@ of that charge.
 
 **Recommendation.** Three retries, with waits of 1 s, 2 s and 4 s.
 ```
+
+## Where plans go, and how they are numbered (standing preference)
+
+The location, the numbering, the digits and the file name of a plan are settings of the
+repository. Read `.claude/docs/plan_settings.md`, and follow `.claude/plan_numbering.md`, before
+you create a plan. Run the checklist in that file before you call a numbered plan finished.

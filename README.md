@@ -123,8 +123,9 @@ uvx --from copier==9.19.1 copier update --vcs-ref <commit-sha>
 
 `copier update` reads `.copier-answers.yml`, and does a three-way merge between the old template,
 the new template and your files. It needs a clean git working tree, and a git repository. Only
-template-owned files change: `.claude/conventions.md` and `.claude/bqrs.md`. Everything else is
-yours after the first copy.
+template-owned files change: `.claude/conventions.md`, `.claude/bqrs.md` and
+`.claude/plan_numbering.md`. Everything else is yours after the first copy, including
+`.claude/docs/plan_settings.md`.
 
 ## Threat model
 

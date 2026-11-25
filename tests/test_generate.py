@@ -37,6 +37,8 @@ REQUIRED = [
     ".claude/architecture_map.md",
     ".claude/docs/environment.md",
     ".claude/docs/known_gaps.md",
+    ".claude/docs/plan_settings.md",
+    ".claude/plan_numbering.md",
     "journal/CHANGELOG.md",
     "journal/misc/.gitkeep",
 ]
@@ -751,3 +753,158 @@ def test_n11_readme_names_the_script_and_the_command():
     assert "npt-copier" in readme
     assert "npt-new" not in readme
     assert SCRIPT.is_file() and os.access(SCRIPT, os.X_OK)
+
+
+# --- plan 0004: plan numbering files, tests P1 to P3 ------------------------------------------
+
+SETTINGS_PATH = ".claude/docs/plan_settings.md"
+NUMBERING_PATH = ".claude/plan_numbering.md"
+SETTINGS_SECTIONS = [
+    "When these settings apply",
+    "Location",
+    "Numbering",
+    "Digits",
+    "File name",
+]
+
+
+def assert_plan_files(project: Path):
+    for rel in (SETTINGS_PATH, NUMBERING_PATH):
+        assert (project / rel).is_file(), f"missing {rel}"
+    settings = (project / SETTINGS_PATH).read_text()
+    headings = re.findall(r"^## (.+)$", settings, re.M)
+    assert headings == SETTINGS_SECTIONS, headings
+    assert "Plans live in `journal/`." in settings
+    digits = settings.split("## Digits", 1)[1].split("## ", 1)[0]
+    assert re.search(r"^3\. ", digits, re.M), "the default width is 3"
+    bqrs = (project / ".claude/bqrs.md").read_text()
+    assert SETTINGS_PATH in bqrs and NUMBERING_PATH in bqrs, "bqrs.md must name both files"
+    assert len(bqrs.splitlines()) <= 120, f"bqrs.md has {len(bqrs.splitlines())} lines"
+    claude = (project / "CLAUDE.md").read_text()
+    assert SETTINGS_PATH in claude, "CLAUDE.md must link the settings file"
+    assert_paths_resolve(project)
+
+
+# P1: the files exist, with their sections and defaults --------------------------------------
+
+
+def test_p1_plan_files(tmp_path):
+    assert_plan_files(generate(REPO, tmp_path / "p"))
+
+
+@pytest.mark.parametrize("missing", [SETTINGS_PATH, NUMBERING_PATH])
+def test_p1_negative_control_a_missing_file_is_caught(tmp_path, missing):
+    tpl = scratch_template(tmp_path)
+    (tpl / "template" / missing).unlink()
+    project = generate(tpl, tmp_path / "p")
+    with pytest.raises(AssertionError):
+        assert_plan_files(project)
+
+
+# P2: a repo's edit to the settings file survives copier update ------------------------------
+
+TEMPLATE_ADDITION = "\n## Added by the template later\n\nThis text must not reach a repo that owns the file.\n"
+
+
+def run_p2(tmp_path: Path, drop_skip_entry=False):
+    tpl = scratch_template(tmp_path, "gittpl")
+    if drop_skip_entry:
+        config = tpl / "copier.yml"
+        text = config.read_text()
+        line = f"  - {SETTINGS_PATH}\n"
+        assert line in text, "the control must find the entry it removes"
+        config.write_text(text.replace(line, ""))
+    git(tpl, "init", "-q", "-b", "main")
+    git(tpl, "add", "-A")
+    git(tpl, "commit", "-q", "-m", "v0.1.0")
+    git(tpl, "tag", "v0.1.0")
+
+    project = tmp_path / "p"
+    generate(tpl, project, vcs_ref="v0.1.0")
+    git(project, "init", "-q", "-b", "main")
+    settings = project / SETTINGS_PATH
+    settings.write_text(settings.read_text().replace("\n3. Write", "\n4. Write"))
+    git(project, "add", "-A")
+    git(project, "commit", "-q", "-m", "repo sets four digits")
+
+    in_template = tpl / "template" / SETTINGS_PATH
+    in_template.write_text(in_template.read_text() + TEMPLATE_ADDITION)
+    git(tpl, "commit", "-q", "-am", "v0.1.1")
+    git(tpl, "tag", "v0.1.1")
+    _update(project, "v0.1.1")
+
+    text = settings.read_text()
+    markers = [
+        str(f.relative_to(project))
+        for f in project.rglob("*")
+        if f.is_file() and ".git" not in f.relative_to(project).parts
+        and "<<<<<<<" in f.read_text(errors="replace")
+    ]
+    return text, markers
+
+
+def assert_p2(text: str, markers: list):
+    digits = text.split("## Digits", 1)[1].split("## ", 1)[0]
+    assert re.search(r"^4\. ", digits, re.M), "the repo's edit was lost"
+    assert not markers, f"conflict markers in {markers}"
+    assert "Added by the template later" not in text, "the template changed a project-owned file"
+
+
+def test_p2_edit_survives_update(tmp_path):
+    assert_p2(*run_p2(tmp_path))
+
+
+def test_p2_negative_control_without_the_skip_entry_the_check_fails(tmp_path):
+    text, markers = run_p2(tmp_path, drop_skip_entry=True)
+    with pytest.raises(AssertionError):
+        assert_p2(text, markers)
+
+
+# P3: an older project gains the settings file on update -------------------------------------
+
+
+def run_p3(tmp_path: Path, add_in_new_version=True):
+    tpl = scratch_template(tmp_path, "gittpl")
+    # an older template: no plan files, no skip entry
+    for rel in (SETTINGS_PATH, NUMBERING_PATH):
+        (tpl / "template" / rel).unlink()
+    config = tpl / "copier.yml"
+    config.write_text(config.read_text().replace(f"  - {SETTINGS_PATH}\n", ""))
+    git(tpl, "init", "-q", "-b", "main")
+    git(tpl, "add", "-A")
+    git(tpl, "commit", "-q", "-m", "v0.1.0")
+    git(tpl, "tag", "v0.1.0")
+
+    project = _generated_repo(tpl, tmp_path / "p")
+    assert not (project / SETTINGS_PATH).exists()
+    claude_before = (project / "CLAUDE.md").read_bytes()
+
+    if add_in_new_version:
+        for rel in (SETTINGS_PATH, NUMBERING_PATH):
+            shutil.copy(REPO / "template" / rel, tpl / "template" / rel)
+        config.write_text(config.read_text().replace(
+            "  - .claude/docs/known_gaps.md\n", f"  - .claude/docs/known_gaps.md\n  - {SETTINGS_PATH}\n"))
+    else:
+        (tpl / "template/.claude/docs/known_gaps.md").write_text("changed so the commit is not empty\n")
+    git(tpl, "add", "-A")
+    git(tpl, "commit", "-q", "-m", "v0.1.1")
+    git(tpl, "tag", "v0.1.1")
+    _update(project, "v0.1.1")
+    return project, claude_before
+
+
+def assert_p3(project: Path, claude_before: bytes):
+    for rel in (SETTINGS_PATH, NUMBERING_PATH):
+        assert (project / rel).is_file(), f"the update did not add {rel}"
+    assert (project / SETTINGS_PATH).read_text() == (REPO / "template" / SETTINGS_PATH).read_text()
+    assert (project / "CLAUDE.md").read_bytes() == claude_before
+
+
+def test_p3_older_project_gains_the_files(tmp_path):
+    assert_p3(*run_p3(tmp_path))
+
+
+def test_p3_negative_control_a_template_without_the_files_adds_nothing(tmp_path):
+    project, claude_before = run_p3(tmp_path, add_in_new_version=False)
+    with pytest.raises(AssertionError):
+        assert_p3(project, claude_before)
